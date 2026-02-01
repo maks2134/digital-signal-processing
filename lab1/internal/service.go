@@ -1,13 +1,19 @@
 package internal
 
-import "lab1/pkg/lab1"
+import (
+	"lab1/pkg/conv"
+	"lab1/pkg/corr"
+	"lab1/pkg/fft"
+	"lab1/pkg/signal"
+	"math"
+)
 
 type Service interface {
-	GenerateSignals() (x, y lab1.Signal)
-	Convolution(x, y lab1.Signal) lab1.Signal
-	Correlation(x, y lab1.Signal) lab1.Signal
-	DFT(sig lab1.Signal) []lab1.Complex
-	IDFT(spec []lab1.Complex, sampleRate float64) lab1.Signal
+	GenerateSignals() (x, y signal.Signal)
+	Convolution(x, y signal.Signal) signal.Signal
+	Correlation(x, y signal.Signal) signal.Signal
+	DFT(sig signal.Signal) []complex128
+	IDFT(spec []complex128, sampleRate float64) signal.Signal
 }
 
 type service struct{}
@@ -16,8 +22,8 @@ func NewService() Service {
 	return &service{}
 }
 
-func (s *service) GenerateSignals() (x, y lab1.Signal) {
-	common := lab1.HarmonicParams{
+func (s *service) GenerateSignals() (x, y signal.Signal) {
+	common := signal.HarmonicParams{
 		Amplitudes: []float64{0.8, 0.5, 0.3},
 		BaseFreq:   330,
 		Harmonics:  []float64{1, 2, 3},
@@ -27,33 +33,33 @@ func (s *service) GenerateSignals() (x, y lab1.Signal) {
 	px := common
 	px.Phi = 0
 	py := common
-	py.Phi = lab1.PiOver2()
-	return lab1.GenerateHarmonicSignal(px), lab1.GenerateHarmonicSignal(py)
+	py.Phi = math.Pi / 2
+	return signal.GenerateHarmonicSignal(px), signal.GenerateHarmonicSignal(py)
 }
 
-func (s *service) Convolution(x, y lab1.Signal) lab1.Signal {
-	out := lab1.Convolve(x.Samples, y.Samples)
-	return lab1.Signal{
+func (s *service) Convolution(x, y signal.Signal) signal.Signal {
+	out := conv.Convolve(x.Samples, y.Samples)
+	return signal.Signal{
 		Samples:    out,
 		SampleRate: x.SampleRate,
 	}
 }
 
-func (s *service) Correlation(x, y lab1.Signal) lab1.Signal {
-	out := lab1.Correlate(x.Samples, y.Samples)
-	return lab1.Signal{
+func (s *service) Correlation(x, y signal.Signal) signal.Signal {
+	out := corr.Correlate(x.Samples, y.Samples)
+	return signal.Signal{
 		Samples:    out,
 		SampleRate: x.SampleRate,
 	}
 }
 
-func (s *service) DFT(sig lab1.Signal) []lab1.Complex {
-	return lab1.DFT(sig.Samples)
+func (s *service) DFT(sig signal.Signal) []complex128 {
+	return fft.DFT(sig.Samples)
 }
 
-func (s *service) IDFT(spec []lab1.Complex, sampleRate float64) lab1.Signal {
-	samples := lab1.IDFT(spec)
-	return lab1.Signal{
+func (s *service) IDFT(spec []complex128, sampleRate float64) signal.Signal {
+	samples := fft.IDFT(spec)
+	return signal.Signal{
 		Samples:    samples,
 		SampleRate: sampleRate,
 	}

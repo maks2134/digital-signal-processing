@@ -65,7 +65,7 @@ function App() {
     const renderSignalChart = (sig?: SignalDTO, title?: string) => {
     if (!sig) return null;
     const N = sig.samples.length;
-    const labels = Array.from({ length: N }, (_, i) => i / sig.sampleRate);
+        const labels = Array.from({ length: N }, (_, i) => (i / sig.sampleRate).toFixed(5));
     return (
       <div style={{ marginBottom: 24 }}>
         <h3>{title}</h3>
@@ -84,10 +84,17 @@ function App() {
           }}
           options={{
             responsive: true,
-            scales: {
-              x: { title: { display: true, text: "t, s" } },
-              y: { title: { display: true, text: "Amplitude" } }
-            }
+              scales: {
+                  x: {
+                      title: { display: true, text: "t, s" },
+                      ticks: {
+                          maxTicksLimit: 10,
+                          maxRotation: 0,
+                          autoSkip: true,
+                      }
+                  },
+                  y: { title: { display: true, text: "Amplitude" } }
+              }
           }}
         />
       </div>
@@ -114,10 +121,17 @@ function App() {
           }}
           options={{
             responsive: true,
-            scales: {
-              x: { title: { display: true, text: "f, Hz" } },
-              y: { title: { display: true, text: "|X(f)|" } }
-            }
+              scales: {
+                  x: {
+                      title: { display: true, text: "f, Hz" },
+                      ticks: {
+                          maxTicksLimit: 20,
+                          maxRotation: 0,
+                          autoSkip: true,
+                      }
+                  },
+                  y: { title: { display: true, text: "|X(f)|" } }
+              }
           }}
         />
         <h4>{title} — фазовый спектр</h4>
@@ -154,7 +168,7 @@ function App() {
         = 0, φy = π/2.
       </p>
       <button onClick={handleAnalyze} style={{ marginBottom: 24 }}>
-        Выполнить анализ (через Go/Wails)
+        Выполнить анализ 
       </button>
 
       {data && (
