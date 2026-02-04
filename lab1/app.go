@@ -27,8 +27,8 @@ func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
 
-func (a *App) Analyze() internal.AnalysisResult {
-	x, y := a.dspServ.GenerateSignals()
+func (a *App) Analyze(N int) internal.AnalysisResult {
+	x, y := a.dspServ.GenerateSignals(N)
 	conv := a.dspServ.Convolution(x, y)
 	corr := a.dspServ.Correlation(x, y)
 	specX := a.dspServ.DFT(x)
@@ -55,8 +55,8 @@ func (a *App) Analyze() internal.AnalysisResult {
 	}
 }
 
-func (a *App) AnalyzeLib() internal.AnalysisResult {
-	x, y := a.dspServ.GenerateSignals()
+func (a *App) AnalyzeLib(N int) internal.AnalysisResult {
+	x, y := a.dspServ.GenerateSignals(N)
 	conv := a.dspServ.Convolution(x, y)
 	corr := a.dspServ.Correlation(x, y)
 	specX := a.dspServ.DFTLib(x)

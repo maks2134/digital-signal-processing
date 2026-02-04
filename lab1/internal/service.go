@@ -9,7 +9,7 @@ import (
 )
 
 type Service interface {
-	GenerateSignals() (x, y signal.Signal)
+	GenerateSignals(N int) (x, y signal.Signal)
 	Convolution(x, y signal.Signal) signal.Signal
 	Correlation(x, y signal.Signal) signal.Signal
 	DFT(sig signal.Signal) []complex128
@@ -24,19 +24,32 @@ func NewService() Service {
 	return &service{}
 }
 
-func (s *service) GenerateSignals() (x, y signal.Signal) {
+func (s *service) GenerateSignals(N int) (x, y signal.Signal) {
+	if N <= 0 {
+		N = 256
+	}
+	sampleRate := float64(N) * 10
+	duration := 1.0
+
 	common := signal.HarmonicParams{
 		Amplitudes: []float64{0.8, 0.5, 0.3},
-		BaseFreq:   330,
+		BaseFreq:   50,
 		Harmonics:  []float64{1, 2, 3},
-		Duration:   0.05,
-		SampleRate: 44100,
+		Duration:   duration,
+		SampleRate: sampleRate,
 	}
 	px := common
 	px.Phi = 0
 	py := common
 	py.Phi = math.Pi / 2
-	return signal.GenerateHarmonicSignal(px), signal.GenerateHarmonicSignal(py)
+	xSig := signal.GenerateHarmonicSignal(px)
+	ySig := signal.GenerateHarmonicSignal(py)
+
+	if len(xSig.Samples) > N {
+		xSig.Samples = xSig.Samples[:N]
+		ySig.Samples = ySig.Samples[:N]
+	}
+	return xSig, ySig
 }
 
 func (s *service) Convolution(x, y signal.Signal) signal.Signal {
@@ -56,11 +69,11 @@ func (s *service) Correlation(x, y signal.Signal) signal.Signal {
 }
 
 func (s *service) DFT(sig signal.Signal) []complex128 {
-	return fft.DFT(sig.Samples)
+	return fft.FFT(sig.Samples)
 }
 
 func (s *service) IDFT(spec []complex128, sampleRate float64) signal.Signal {
-	samples := fft.IDFT(spec)
+	samples := fft.IFFT(spec)
 	return signal.Signal{
 		Samples:    samples,
 		SampleRate: sampleRate,
