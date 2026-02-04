@@ -34,6 +34,12 @@ func (a *App) Analyze() internal.AnalysisResult {
 	specX := a.dspServ.DFT(x)
 	specY := a.dspServ.DFT(y)
 	specConv := a.dspServ.DFT(conv)
+	specCorr := a.dspServ.DFT(corr)
+
+	idftX := a.dspServ.IDFT(specX, x.SampleRate)
+	idftY := a.dspServ.IDFT(specY, y.SampleRate)
+	idftConv := a.dspServ.IDFT(specConv, conv.SampleRate)
+
 	return internal.AnalysisResult{
 		X:            toSignalDTO(x),
 		Y:            toSignalDTO(y),
@@ -42,6 +48,38 @@ func (a *App) Analyze() internal.AnalysisResult {
 		SpectrumX:    toSpectrumDTO(specX, x.SampleRate),
 		SpectrumY:    toSpectrumDTO(specY, y.SampleRate),
 		SpectrumConv: toSpectrumDTO(specConv, conv.SampleRate),
+		SpectrumCorr: toSpectrumDTO(specCorr, corr.SampleRate),
+		IDFTX:        toSignalDTO(idftX),
+		IDFTY:        toSignalDTO(idftY),
+		IDFTConv:     toSignalDTO(idftConv),
+	}
+}
+
+func (a *App) AnalyzeLib() internal.AnalysisResult {
+	x, y := a.dspServ.GenerateSignals()
+	conv := a.dspServ.Convolution(x, y)
+	corr := a.dspServ.Correlation(x, y)
+	specX := a.dspServ.DFTLib(x)
+	specY := a.dspServ.DFTLib(y)
+	specConv := a.dspServ.DFTLib(conv)
+	specCorr := a.dspServ.DFTLib(corr)
+
+	idftX := a.dspServ.IDFTLib(specX, x.SampleRate)
+	idftY := a.dspServ.IDFTLib(specY, y.SampleRate)
+	idftConv := a.dspServ.IDFTLib(specConv, conv.SampleRate)
+
+	return internal.AnalysisResult{
+		X:            toSignalDTO(x),
+		Y:            toSignalDTO(y),
+		Conv:         toSignalDTO(conv),
+		Corr:         toSignalDTO(corr),
+		SpectrumX:    toSpectrumDTO(specX, x.SampleRate),
+		SpectrumY:    toSpectrumDTO(specY, y.SampleRate),
+		SpectrumConv: toSpectrumDTO(specConv, conv.SampleRate),
+		SpectrumCorr: toSpectrumDTO(specCorr, corr.SampleRate),
+		IDFTX:        toSignalDTO(idftX),
+		IDFTY:        toSignalDTO(idftY),
+		IDFTConv:     toSignalDTO(idftConv),
 	}
 }
 

@@ -14,6 +14,8 @@ type Service interface {
 	Correlation(x, y signal.Signal) signal.Signal
 	DFT(sig signal.Signal) []complex128
 	IDFT(spec []complex128, sampleRate float64) signal.Signal
+	DFTLib(sig signal.Signal) []complex128
+	IDFTLib(spec []complex128, sampleRate float64) signal.Signal
 }
 
 type service struct{}
@@ -59,6 +61,18 @@ func (s *service) DFT(sig signal.Signal) []complex128 {
 
 func (s *service) IDFT(spec []complex128, sampleRate float64) signal.Signal {
 	samples := fft.IDFT(spec)
+	return signal.Signal{
+		Samples:    samples,
+		SampleRate: sampleRate,
+	}
+}
+
+func (s *service) DFTLib(sig signal.Signal) []complex128 {
+	return fft.DFTLib(sig.Samples)
+}
+
+func (s *service) IDFTLib(spec []complex128, sampleRate float64) signal.Signal {
+	samples := fft.IDFTLib(spec)
 	return signal.Signal{
 		Samples:    samples,
 		SampleRate: sampleRate,

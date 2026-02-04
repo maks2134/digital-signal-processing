@@ -4,4 +4,6 @@ import {internal} from '../models';
 
 export function Analyze():Promise<internal.AnalysisResult>;
 
+export function AnalyzeLib():Promise<internal.AnalysisResult>;
+
 export function Greet(arg1:string):Promise<string>;

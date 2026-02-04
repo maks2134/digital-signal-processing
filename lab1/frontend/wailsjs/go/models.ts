@@ -38,6 +38,10 @@ export namespace internal {
 	    spectrumX: SpectrumDTO;
 	    spectrumY: SpectrumDTO;
 	    spectrumConv: SpectrumDTO;
+	    spectrumCorr: SpectrumDTO;
+	    idftX: SignalDTO;
+	    idftY: SignalDTO;
+	    idftConv: SignalDTO;
 	
 	    static createFrom(source: any = {}) {
 	        return new AnalysisResult(source);
@@ -52,6 +56,10 @@ export namespace internal {
 	        this.spectrumX = this.convertValues(source["spectrumX"], SpectrumDTO);
 	        this.spectrumY = this.convertValues(source["spectrumY"], SpectrumDTO);
 	        this.spectrumConv = this.convertValues(source["spectrumConv"], SpectrumDTO);
+	        this.spectrumCorr = this.convertValues(source["spectrumCorr"], SpectrumDTO);
+	        this.idftX = this.convertValues(source["idftX"], SignalDTO);
+	        this.idftY = this.convertValues(source["idftY"], SignalDTO);
+	        this.idftConv = this.convertValues(source["idftConv"], SignalDTO);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

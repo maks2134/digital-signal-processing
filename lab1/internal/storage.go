@@ -19,4 +19,8 @@ type AnalysisResult struct {
 	SpectrumX    SpectrumDTO `json:"spectrumX"`
 	SpectrumY    SpectrumDTO `json:"spectrumY"`
 	SpectrumConv SpectrumDTO `json:"spectrumConv"`
+	SpectrumCorr SpectrumDTO `json:"spectrumCorr"`
+	IDFTX        SignalDTO   `json:"idftX"`
+	IDFTY        SignalDTO   `json:"idftY"`
+	IDFTConv     SignalDTO   `json:"idftConv"`
 }

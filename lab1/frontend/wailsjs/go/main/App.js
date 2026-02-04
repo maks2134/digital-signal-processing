@@ -6,6 +6,10 @@ export function Analyze() {
   return window['go']['main']['App']['Analyze']();
 }
 
+export function AnalyzeLib() {
+  return window['go']['main']['App']['AnalyzeLib']();
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
