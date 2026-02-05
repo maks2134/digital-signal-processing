@@ -8,31 +8,61 @@ import (
 func DFT(x []float64) []complex128 {
 	N := len(x)
 	X := make([]complex128, N)
+	if N == 0 {
+		return X
+	}
+
 	twoPi := 2 * math.Pi
 	for k := 0; k < N; k++ {
-		var re, im float64
+		var sum complex128
 		for n := 0; n < N; n++ {
 			angle := -twoPi * float64(k*n) / float64(N)
-			re += x[n] * math.Cos(angle)
-			im += x[n] * math.Sin(angle)
+			w := cmplx.Exp(complex(0, angle))
+			sum += complex(x[n], 0) * w
 		}
-		X[k] = complex(re, im)
+		X[k] = sum
 	}
 	return X
 }
 
-func FFT(x []float64) []complex128 {
-	N := len(x)
-	if N <= 1 {
-		result := make([]complex128, N)
-		for i := range x {
-			result[i] = complex(x[i], 0)
-		}
-		return result
+func IDFT(X []complex128) []float64 {
+	N := len(X)
+	x := make([]float64, N)
+	if N == 0 {
+		return x
 	}
 
-	if N&(N-1) != 0 {
-		return DFT(x)
+	twoPi := 2 * math.Pi
+	for n := 0; n < N; n++ {
+		var sum complex128
+		for k := 0; k < N; k++ {
+			angle := twoPi * float64(k*n) / float64(N)
+			w := cmplx.Exp(complex(0, angle))
+			sum += X[k] * w
+		}
+		x[n] = real(sum) / float64(N)
+	}
+	return x
+}
+
+func FFT(x []float64) []complex128 {
+	N := len(x)
+	if N == 0 {
+		return []complex128{}
+	}
+	size := 1
+	for size < N {
+		size <<= 1
+	}
+	if size != N {
+		xPadded := make([]float64, size)
+		copy(xPadded, x)
+		x = xPadded
+		N = size
+	}
+
+	if N == 1 {
+		return []complex128{complex(x[0], 0)}
 	}
 
 	even := make([]float64, N/2)
@@ -45,49 +75,37 @@ func FFT(x []float64) []complex128 {
 	evenFFT := FFT(even)
 	oddFFT := FFT(odd)
 
-	X := make([]complex128, N)
+	Y := make([]complex128, N)
 	twoPi := 2 * math.Pi
 	for k := 0; k < N/2; k++ {
-		angle := -twoPi * float64(k) / float64(N)
-		twiddle := cmplx.Exp(complex(0, angle))
-		t := oddFFT[k] * twiddle
-		X[k] = evenFFT[k] + t
-		X[k+N/2] = evenFFT[k] - t
+		angle := -twoPi * float64(k) / float64(N) //степень eшки узнать про минус
+		twiddle := cmplx.Exp(complex(0, angle))   //Wn
+		t := oddFFT[k] * twiddle                  // w * bj нечет
+		Y[k] = evenFFT[k] + t
+		Y[k+N/2] = evenFFT[k] - t
 	}
 
-	return X
-}
-
-func IDFT(X []complex128) []float64 {
-	N := len(X)
-	x := make([]float64, N)
-	twoPi := 2 * math.Pi
-
-	for n := 0; n < N; n++ {
-		var re float64
-		for k := 0; k < N; k++ {
-			angle := twoPi * float64(k*n) / float64(N)
-			c := math.Cos(angle)
-			s := math.Sin(angle)
-			re += real(X[k])*c - imag(X[k])*s
-		}
-		x[n] = re / float64(N)
-	}
-	return x
+	return Y
 }
 
 func IFFT(X []complex128) []float64 {
 	N := len(X)
-	if N <= 1 {
-		result := make([]float64, N)
-		for i := range X {
-			result[i] = real(X[i]) / float64(N)
-		}
-		return result
+	if N == 0 {
+		return []float64{}
+	}
+	size := 1
+	for size < N {
+		size <<= 1
+	}
+	if size != N {
+		XPadded := make([]complex128, size)
+		copy(XPadded, X)
+		X = XPadded
+		N = size
 	}
 
-	if N&(N-1) != 0 {
-		return IDFT(X)
+	if N == 1 {
+		return []float64{real(X[0])}
 	}
 
 	even := make([]complex128, N/2)

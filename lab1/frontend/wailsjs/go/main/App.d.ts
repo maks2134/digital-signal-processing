@@ -5,5 +5,3 @@ import {internal} from '../models';
 export function Analyze(arg1:number):Promise<internal.AnalysisResult>;
 
 export function AnalyzeLib(arg1:number):Promise<internal.AnalysisResult>;
-
-export function Greet(arg1:string):Promise<string>;

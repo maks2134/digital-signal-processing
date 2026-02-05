@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"lab1/internal"
 	"lab1/pkg/signal"
 	"math/cmplx"
@@ -21,10 +20,6 @@ func NewApp() *App {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-}
-
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
 
 func (a *App) Analyze(N int) internal.AnalysisResult {
@@ -57,8 +52,8 @@ func (a *App) Analyze(N int) internal.AnalysisResult {
 
 func (a *App) AnalyzeLib(N int) internal.AnalysisResult {
 	x, y := a.dspServ.GenerateSignals(N)
-	conv := a.dspServ.Convolution(x, y)
-	corr := a.dspServ.Correlation(x, y)
+	conv := a.dspServ.ConvolutionLib(x, y)
+	corr := a.dspServ.CorrelationLib(x, y)
 	specX := a.dspServ.DFTLib(x)
 	specY := a.dspServ.DFTLib(y)
 	specConv := a.dspServ.DFTLib(conv)

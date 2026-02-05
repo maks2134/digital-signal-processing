@@ -4,13 +4,12 @@ func Convolve(x, y []float64) []float64 {
 	N := len(x)
 	M := len(y)
 	out := make([]float64, N+M-1)
-
 	for n := 0; n < N+M-1; n++ {
 		var sum float64
-		for k := 0; k < N; k++ {
-			j := n - k
-			if j >= 0 && j < M {
-				sum += x[k] * y[j]
+		for m := 0; m < N; m++ {
+			h := n - m
+			if h >= 0 && h < M {
+				sum += x[m] * y[h]
 			}
 		}
 		out[n] = sum

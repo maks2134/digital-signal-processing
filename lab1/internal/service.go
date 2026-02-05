@@ -16,6 +16,8 @@ type Service interface {
 	IDFT(spec []complex128, sampleRate float64) signal.Signal
 	DFTLib(sig signal.Signal) []complex128
 	IDFTLib(spec []complex128, sampleRate float64) signal.Signal
+	ConvolutionLib(x, y signal.Signal) signal.Signal
+	CorrelationLib(x, y signal.Signal) signal.Signal
 }
 
 type service struct{}
@@ -33,7 +35,7 @@ func (s *service) GenerateSignals(N int) (x, y signal.Signal) {
 
 	common := signal.HarmonicParams{
 		Amplitudes: []float64{0.8, 0.5, 0.3},
-		BaseFreq:   50,
+		BaseFreq:   330,
 		Harmonics:  []float64{1, 2, 3},
 		Duration:   duration,
 		SampleRate: sampleRate,
@@ -89,5 +91,21 @@ func (s *service) IDFTLib(spec []complex128, sampleRate float64) signal.Signal {
 	return signal.Signal{
 		Samples:    samples,
 		SampleRate: sampleRate,
+	}
+}
+
+func (s *service) ConvolutionLib(x, y signal.Signal) signal.Signal {
+	out := conv.ConvolveLib(x.Samples, y.Samples)
+	return signal.Signal{
+		Samples:    out,
+		SampleRate: x.SampleRate,
+	}
+}
+
+func (s *service) CorrelationLib(x, y signal.Signal) signal.Signal {
+	out := corr.CorrelateLib(x.Samples, y.Samples)
+	return signal.Signal{
+		Samples:    out,
+		SampleRate: x.SampleRate,
 	}
 }

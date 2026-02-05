@@ -312,58 +312,29 @@ function App() {
 
       {data && (
         <>
-          <h2 style={{ color: "#7b2c34" }}>Собственная реализация</h2>
-          <h3 style={{ color: "#7b2c34" }}>Сигналы во временной области</h3>
           {renderSignalChart(data.x, "x(t)")}
-          <button 
-            onClick={() => playSignal(data.x, "x(t)")} 
-            style={{ 
-              marginBottom: 8,
-              background: "#7b2c34",
-              color: "#fff",
-              border: "none",
-              padding: "6px 12px",
-              borderRadius: 4,
-              cursor: "pointer"
-            }}
-          >
-            🔊 Воспроизвести x(t)
-          </button>
           {renderSignalChart(data.y, "y(t)")}
-          <button 
-            onClick={() => playSignal(data.y, "y(t)")} 
-            style={{ 
-              marginBottom: 8,
-              background: "#7b2c34",
-              color: "#fff",
-              border: "none",
-              padding: "6px 12px",
-              borderRadius: 4,
-              cursor: "pointer"
-            }}
-          >
-            🔊 Воспроизвести y(t)
-          </button>
-          {renderSignalChart(data.conv, "Прямое фурье свертки x*y")}
-          {renderSignalChart(data.corr, "Корреляция x*y")}
-
-          {data.idftX && renderSignalChart(data.idftX, "Обратное преобразование фурье для x(t)")}
-          {data.idftY && renderSignalChart(data.idftY, "Обратное преобразование фурье для y(t)")}
-          {data.idftConv && renderSignalChart(data.idftConv, "Обратное преобразование фурье для свертки")}
-
-          <h3 style={{ color: "#7b2c34" }}>Спектры</h3>
-          {renderSpectrumChart(data.spectrumX, "X(f)")}
-          {renderSpectrumChart(data.spectrumY, "Y(f)")}
+          {renderSpectrumChart(data.spectrumX, "ДПФ X(f)")}
+          {data.idftX && renderSignalChart(data.idftX, "ОДПФ x(t)")}
+          {renderSpectrumChart(data.spectrumX, "БПФ X(f)")}
+          {data.idftX && renderSignalChart(data.idftX, "ОБПФ x(t)")}
+          {renderSpectrumChart(data.spectrumY, "ДПФ Y(f)")}
+          {data.idftY && renderSignalChart(data.idftY, "ОДПФ y(t)")}
+          {renderSpectrumChart(data.spectrumY, "БПФ Y(f)")}
+          {data.idftY && renderSignalChart(data.idftY, "ОБПФ y(t)")}
+          {renderSignalChart(data.conv, "Свертка")}
+          {dataLib && renderSignalChart(dataLib.conv, "Свертка через БПФ")}
+          {renderSignalChart(data.corr, "Корреляция")}
+          {dataLib && renderSignalChart(dataLib.corr, "Корреляция через БПФ")}
         </>
       )}
 
       {dataLib && (
         <>
-          <h2 style={{ color: "#7b2c34" }}>Библиотека gonum</h2>
-          <h3 style={{ color: "#7b2c34" }}>Сигналы во временной области</h3>
-          {dataLib.idftX && renderSignalChart(dataLib.idftX, "Обратное преобразование фурье для x(t)")}
-          {dataLib.idftY && renderSignalChart(dataLib.idftY, "Обратное преобразование фурье для y(t)")}
-          {dataLib.idftConv && renderSignalChart(dataLib.idftConv, "Обратное преобразование фурье для свертки")}
+          {renderSpectrumChart(dataLib.spectrumX, "БПФ X(f) (OS)")}
+          {renderSpectrumChart(dataLib.spectrumY, "БПФ Y(f) (OS)")}
+          {renderSignalChart(dataLib.conv, "Свертка (OS)")}
+          {renderSignalChart(dataLib.corr, "Корреляция (OS)")}
         </>
       )}
     </div>

@@ -9,7 +9,3 @@ export function Analyze(arg1) {
 export function AnalyzeLib(arg1) {
   return window['go']['main']['App']['AnalyzeLib'](arg1);
 }
-
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
-}
