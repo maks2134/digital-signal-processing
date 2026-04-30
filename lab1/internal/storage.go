@@ -8,7 +8,6 @@ type SignalDTO struct {
 type SpectrumDTO struct {
 	Freqs []float64 `json:"freqs"`
 	Mag   []float64 `json:"mag"`
-	Phase []float64 `json:"phase"`
 }
 
 type AnalysisResult struct {

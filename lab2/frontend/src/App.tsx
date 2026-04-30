@@ -29,7 +29,6 @@ type SignalDTO = {
 type SpectrumDTO = {
   freqs: number[];
   mag: number[];
-  phase: number[];
 };
 
 type AnalysisResult = {
@@ -52,6 +51,9 @@ type FilterResult = {
   magnitude: number[];
   inputSignal: SignalDTO;
   inputSpectrum: SpectrumDTO;
+  cleanSignal: SignalDTO;
+  noisySignal: SignalDTO;
+  outputSpectrum: SpectrumDTO;
 };
 
 type FilterResults = {
@@ -233,6 +235,8 @@ function App() {
 
   const renderSpectrumChart = (spec?: SpectrumDTO, title?: string) => {
     if (!spec) return null;
+
+  
     return (
       <div style={{ marginBottom: 24 }}>
         <h3 style={{ color: "#7b2c34" }}>{title} — амплитудный спектр</h3>
@@ -266,38 +270,6 @@ function App() {
               },
               y: {
                 title: { display: true, text: "|X(f)|", color: "#7a5c4d" },
-                grid: { color: "#e6d3c3" },
-                ticks: { color: "#7a5c4d" }
-              }
-            }
-          }}
-        />
-        <h4 style={{ color: "#8b5cf6" }}>{title} — фазовый спектр</h4>
-        <Line
-          data={{
-            labels: spec.freqs,
-            datasets: [
-              {
-                label: "Phase",
-                data: spec.phase,
-                borderColor: "#8b5cf6",
-                backgroundColor: "rgba(139, 92, 246, 0.08)",
-                borderWidth: 2,
-                pointRadius: 0,
-                fill: false
-              }
-            ]
-          }}
-          options={{
-            responsive: true,
-            scales: {
-              x: {
-                title: { display: true, text: "f, Hz", color: "#7a5c4d" },
-                grid: { color: "#e6d3c3" },
-                ticks: { color: "#7a5c4d" }
-              },
-              y: {
-                title: { display: true, text: "Phase, rad", color: "#7a5c4d" },
                 grid: { color: "#e6d3c3" },
                 ticks: { color: "#7a5c4d" }
               }
@@ -439,11 +411,11 @@ function App() {
         БИХ полосовой фильтр: f0=400 Гц, BW=80 Гц
       </p>
 
-      <div style={{ marginBottom: 24, display: "flex", gap: 12 }}>
+      <div style={{ marginBottom: 24, display: "flex", justifyContent: "center", gap: 12 }}>
         <button
           onClick={handleApplyFilters}
           style={{
-            background: "#059669",
+            background: "#7b2c34",
             color: "#fff",
             border: "none",
             padding: "8px 14px",
@@ -456,7 +428,7 @@ function App() {
         <button
           onClick={handleExportFilters}
           style={{
-            background: "#7b5f47",
+            background: "#7b2c34",
             color: "#fff",
             border: "none",
             padding: "8px 14px",
@@ -470,20 +442,36 @@ function App() {
 
       {filterResults && (
         <>
-          <h3 style={{ color: "#7b2c34" }}>Входной сигнал с помехами</h3>
-          {renderSignalChart(filterResults.movingAverage.inputSignal, "Входной сигнал")}
-          {renderSpectrumChart(filterResults.movingAverage.inputSpectrum, "Спектр входного сигнала")}
+          <h3 style={{ color: "#7b2c34" }}>Исходный сигнал без шума</h3>
+          {renderSignalChart(filterResults.movingAverage.cleanSignal, "Чистый сигнал (330 Гц)")}
+          {renderSpectrumChart(filterResults.movingAverage.inputSpectrum, "Спектр чистого сигнала")}
+
+          <h3 style={{ color: "#7b2c34" }}>Сигнал с шумом (помеха 660 Гц)</h3>
+          {renderSignalChart(filterResults.movingAverage.noisySignal, "Сигнал с шумом")}
+          {renderSpectrumChart(filterResults.movingAverage.inputSpectrum, "Спектр сигнала с шумом")}
 
           <h3 style={{ color: "#7b2c34" }}>1. Однородный фильтр (M=15)</h3>
           {renderSignalChart(filterResults.movingAverage.filtered, "Выход однородного фильтра")}
+          {renderSpectrumChart(filterResults.movingAverage.outputSpectrum, "Выходной спектр однородного фильтра")}
 
           <h3 style={{ color: "#7b2c34" }}>2. КИХ режекторный фильтр (653-667 Гц, M=201, Ханна)</h3>
-          {renderFilterFrequencyResponse(filterResults.firBandStop.freqs, filterResults.firBandStop.magnitude, "КИХ фильтр")}
           {renderSignalChart(filterResults.firBandStop.filtered, "Выход КИХ режекторного фильтра")}
+          {renderSpectrumChart(filterResults.firBandStop.outputSpectrum, "Выходной спектр КИХ фильтра")}
 
           <h3 style={{ color: "#7b2c34" }}>3. БИХ полосовой фильтр (f0=400 Гц, BW=80 Гц)</h3>
-          {renderFilterFrequencyResponse(filterResults.iirBandPass.freqs, filterResults.iirBandPass.magnitude, "БИХ фильтр")}
           {renderSignalChart(filterResults.iirBandPass.filtered, "Выход БИХ полосового фильтра")}
+          {renderSpectrumChart(filterResults.iirBandPass.outputSpectrum, "Выходной спектр БИХ фильтра")}
+
+          <h3 style={{ color: "#7b2c34" }}>Амплитудно-частотные характеристики фильтров</h3>
+          {renderFilterFrequencyResponse(filterResults.movingAverage.freqs, filterResults.movingAverage.magnitude, "Однородный фильтр")}
+          {renderFilterFrequencyResponse(filterResults.firBandStop.freqs, filterResults.firBandStop.magnitude, "КИХ режекторный фильтр")}
+          {renderFilterFrequencyResponse(filterResults.iirBandPass.freqs, filterResults.iirBandPass.magnitude, "БИХ полосовой фильтр")}
+
+          <h3 style={{ color: "#7b2c34" }}>АЧХ входного сигнала с шумом</h3>
+          {renderSpectrumChart(filterResults.movingAverage.inputSpectrum, "Спектр входного сигнала")}
+
+          <h3 style={{ color: "#7b2c34" }}>Готовый сигнал после всех фильтров</h3>
+          {renderSignalChart(filterResults.final.filtered, "Финальный выходной сигнал")}
         </>
       )}
 

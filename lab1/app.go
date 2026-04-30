@@ -89,16 +89,13 @@ func toSpectrumDTO(X []complex128, sampleRate float64) internal.SpectrumDTO {
 	N := len(X)
 	freqs := make([]float64, N)
 	mag := make([]float64, N)
-	phase := make([]float64, N)
 	df := sampleRate / float64(N)
 	for k := 0; k < N; k++ {
 		freqs[k] = float64(k) * df
 		mag[k] = cmplx.Abs(X[k])
-		phase[k] = cmplx.Phase(X[k])
 	}
 	return internal.SpectrumDTO{
 		Freqs: freqs,
 		Mag:   mag,
-		Phase: phase,
 	}
 }

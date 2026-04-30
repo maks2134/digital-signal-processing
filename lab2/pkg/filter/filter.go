@@ -4,7 +4,6 @@ import (
 	"math"
 )
 
-// MovingAverageFilter - однородный фильтр (нерекурсивный)
 func MovingAverageFilter(signal []float64, M int) []float64 {
 	if M <= 0 || len(signal) == 0 {
 		return signal
@@ -26,7 +25,7 @@ func MovingAverageFilter(signal []float64, M int) []float64 {
 	return result
 }
 
-// HannWindow - окно Ханна
+// Хеннинга
 func HannWindow(M int) []float64 {
 	window := make([]float64, M)
 	for n := 0; n < M; n++ {
@@ -35,27 +34,20 @@ func HannWindow(M int) []float64 {
 	return window
 }
 
-// DesignFIRBandStop - проектирование КИХ режекторного фильтра методом окна
-// f1, f2 - границы режекторной полосы в Гц
-// fs - частота дискретизации в Гц
-// M - порядок фильтра (должен быть нечетный)
+// ких режекторный
 func DesignFIRBandStop(f1, f2, fs float64, M int) []float64 {
-	// Убедимся, что M нечетный
 	if M%2 == 0 {
 		M++
 	}
 
-	// Нормализуем частоты
 	w1 := 2 * math.Pi * f1 / fs
 	w2 := 2 * math.Pi * f2 / fs
-	_ = w1 // used in formula
-	_ = w2 // used in formula
+	_ = w1
+	_ = w2
 
-	// Сначала проектируем низкочастотный фильтр с частотой среза wc1
 	N := M / 2
 	h_lp := make([]float64, M)
 
-	// Коэффициент для низкочастотного фильтра
 	fc1 := f1 / fs
 	for n := 0; n < M; n++ {
 		if n == N {
@@ -65,7 +57,6 @@ func DesignFIRBandStop(f1, f2, fs float64, M int) []float64 {
 		}
 	}
 
-	// Коэффициент для высокочастотного фильтра
 	fc2 := f2 / fs
 	h_hp := make([]float64, M)
 	for n := 0; n < M; n++ {
@@ -76,11 +67,9 @@ func DesignFIRBandStop(f1, f2, fs float64, M int) []float64 {
 		}
 	}
 
-	// Применяем окно Ханна
 	window := HannWindow(M)
 	h_bandstop := make([]float64, M)
 
-	// Режекторный фильтр = низкочастотный + высокочастотный
 	for n := 0; n < M; n++ {
 		h_bandstop[n] = (h_lp[n] + h_hp[n]) * window[n]
 	}
@@ -88,7 +77,7 @@ func DesignFIRBandStop(f1, f2, fs float64, M int) []float64 {
 	return h_bandstop
 }
 
-// FIRFilter - применяет КИХ фильтр к сигналу (линейная свертка)
+// ких
 func FIRFilter(signal, coeffs []float64) []float64 {
 	if len(signal) == 0 || len(coeffs) == 0 {
 		return signal
@@ -98,9 +87,9 @@ func FIRFilter(signal, coeffs []float64) []float64 {
 
 	for n := 0; n < len(signal); n++ {
 		sum := 0.0
-		for m := 0; m < len(coeffs); m++ {
-			if n-m >= 0 {
-				sum += coeffs[m] * signal[n-m]
+		for k := 0; k < len(coeffs); k++ {
+			if n-k >= 0 {
+				sum += coeffs[k] * signal[n-k]
 			}
 		}
 		result[n] = sum
@@ -109,30 +98,21 @@ func FIRFilter(signal, coeffs []float64) []float64 {
 	return result
 }
 
-// BiquadCoefficients - коэффициенты биквадратного звена (IIR фильтр)
 type BiquadCoefficients struct {
-	B0, B1, B2 float64 // Коэффициенты числителя
-	A1, A2     float64 // Коэффициенты знаменателя (a0=1)
+	B0, B1, B2 float64
+	A1, A2     float64
 }
 
-// DesignBandPassIIR - проектирование БИХ полосового фильтра
-// f0 - центральная частота в Гц
-// bw - полоса пропускания в Гц
-// fs - частота дискретизации в Гц
 func DesignBandPassIIR(f0, bw, fs float64) BiquadCoefficients {
-	// Нормализуем параметры
 	w0 := 2 * math.Pi * f0 / fs
-	_ = 2 * math.Pi * bw / fs // bandwidth normalized
+	_ = 2 * math.Pi * bw / fs
 
-	// Коэффициент качества
 	Q := f0 / bw
 
-	// Синус и косинус центральной частоты
 	sinW0 := math.Sin(w0)
 	cosW0 := math.Cos(w0)
 	alpha := sinW0 / (2 * Q)
 
-	// Коэффициенты полосового фильтра
 	b0 := alpha
 	b1 := 0.0
 	b2 := -alpha
@@ -140,7 +120,6 @@ func DesignBandPassIIR(f0, bw, fs float64) BiquadCoefficients {
 	a1 := -2 * cosW0
 	a2 := 1 - alpha
 
-	// Нормализуем на a0
 	return BiquadCoefficients{
 		B0: b0 / a0,
 		B1: b1 / a0,
@@ -150,7 +129,7 @@ func DesignBandPassIIR(f0, bw, fs float64) BiquadCoefficients {
 	}
 }
 
-// IIRFilter - применяет БИХ фильтр к сигналу
+// бих
 func IIRFilter(signal []float64, coeffs BiquadCoefficients) []float64 {
 	if len(signal) == 0 {
 		return signal
@@ -158,7 +137,6 @@ func IIRFilter(signal []float64, coeffs BiquadCoefficients) []float64 {
 
 	result := make([]float64, len(signal))
 
-	// Инициализируем предыдущие значения
 	x_prev1 := 0.0
 	x_prev2 := 0.0
 	y_prev1 := 0.0
@@ -170,7 +148,6 @@ func IIRFilter(signal []float64, coeffs BiquadCoefficients) []float64 {
 
 		result[n] = y
 
-		// Сдвигаем значения
 		x_prev2 = x_prev1
 		x_prev1 = signal[n]
 		y_prev2 = y_prev1
@@ -180,19 +157,17 @@ func IIRFilter(signal []float64, coeffs BiquadCoefficients) []float64 {
 	return result
 }
 
-// ComputeFrequencyResponse - вычисляет частотную характеристику фильтра
 func ComputeFrequencyResponse(coeffs interface{}, fs float64, nFreqs int) ([]float64, []float64) {
 	freqs := make([]float64, nFreqs)
 	magnitude := make([]float64, nFreqs)
 
 	switch c := coeffs.(type) {
-	case []float64: // FIR filter coefficients
+	case []float64:
 		for k := 0; k < nFreqs; k++ {
 			freq := float64(k) * fs / float64(2*nFreqs)
 			freqs[k] = freq
 			w := 2 * math.Pi * freq / fs
 
-			// Вычисляем H(e^jw)
 			real := 0.0
 			imag := 0.0
 
@@ -204,7 +179,7 @@ func ComputeFrequencyResponse(coeffs interface{}, fs float64, nFreqs int) ([]flo
 			magnitude[k] = math.Sqrt(real*real + imag*imag)
 		}
 
-	case BiquadCoefficients: // IIR biquad coefficients
+	case BiquadCoefficients:
 		for k := 0; k < nFreqs; k++ {
 			freq := float64(k) * fs / float64(2*nFreqs)
 			if freq > fs/2 {
@@ -213,15 +188,12 @@ func ComputeFrequencyResponse(coeffs interface{}, fs float64, nFreqs int) ([]flo
 			freqs[k] = freq
 			w := 2 * math.Pi * freq / fs
 
-			// Численность
 			numReal := c.B0 + c.B1*math.Cos(w) + c.B2*math.Cos(2*w)
 			numImag := -c.B1*math.Sin(w) - c.B2*math.Sin(2*w)
 
-			// Знаменатель
 			denReal := 1 + c.A1*math.Cos(w) + c.A2*math.Cos(2*w)
 			denImag := -c.A1*math.Sin(w) - c.A2*math.Sin(2*w)
 
-			// |H(jw)| = |Num| / |Den|
 			numMag := math.Sqrt(numReal*numReal + numImag*numImag)
 			denMag := math.Sqrt(denReal*denReal + denImag*denImag)
 

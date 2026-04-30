@@ -3,7 +3,6 @@ export namespace internal {
 	export class SpectrumDTO {
 	    freqs: number[];
 	    mag: number[];
-	    phase: number[];
 	
 	    static createFrom(source: any = {}) {
 	        return new SpectrumDTO(source);
@@ -13,7 +12,6 @@ export namespace internal {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.freqs = source["freqs"];
 	        this.mag = source["mag"];
-	        this.phase = source["phase"];
 	    }
 	}
 	export class SignalDTO {

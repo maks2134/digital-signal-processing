@@ -20,8 +20,8 @@ type Service interface {
 	ConvolutionLib(x, y signal.Signal) signal.Signal
 	CorrelationLib(x, y signal.Signal) signal.Signal
 
-	// Filter methods
 	GenerateSignalWithNoise(N int) signal.Signal
+	GenerateCleanSignal(N int) signal.Signal
 	ApplyMovingAverageFilter(sig signal.Signal, M int) signal.Signal
 	ApplyFIRBandStopFilter(sig signal.Signal, f1, f2 float64, M int) (signal.Signal, []float64, []float64, []float64)
 	ApplyIIRBandPassFilter(sig signal.Signal, f0, bw float64) (signal.Signal, []float64, []float64)
@@ -118,7 +118,6 @@ func (s *service) CorrelationLib(x, y signal.Signal) signal.Signal {
 	}
 }
 
-// GenerateSignalWithNoise - генерирует чистый сигнал 330 Гц с помехами в полосе [653,667] Гц
 func (s *service) GenerateSignalWithNoise(N int) signal.Signal {
 	if N <= 0 {
 		N = 2560
@@ -126,7 +125,6 @@ func (s *service) GenerateSignalWithNoise(N int) signal.Signal {
 	sampleRate := float64(N) * 10
 	duration := 1.0
 
-	// Основной сигнал 330 Гц
 	params := signal.HarmonicParams{
 		Amplitudes: []float64{1.0, 0.5, 0.3},
 		BaseFreq:   330,
@@ -138,12 +136,10 @@ func (s *service) GenerateSignalWithNoise(N int) signal.Signal {
 
 	sig := signal.GenerateHarmonicSignal(params)
 
-	// Добавляем помехи (узкополосный шум в диапазоне [653,667] Гц)
 	nSamples := len(sig.Samples)
 	for n := 0; n < nSamples; n++ {
 		t := float64(n) / sampleRate
-		// Помеха на частоте 660 Гц (центр диапазона [653,667])
-		noise := 0.3 * math.Sin(2*math.Pi*660*t)
+		noise := 1.5 * math.Sin(2*math.Pi*660*t)
 		sig.Samples[n] += noise
 	}
 
@@ -153,7 +149,30 @@ func (s *service) GenerateSignalWithNoise(N int) signal.Signal {
 	return sig
 }
 
-// ApplyMovingAverageFilter - применяет однородный фильтр
+func (s *service) GenerateCleanSignal(N int) signal.Signal {
+	if N <= 0 {
+		N = 2560
+	}
+	sampleRate := float64(N) * 10
+	duration := 1.0
+
+	params := signal.HarmonicParams{
+		Amplitudes: []float64{1.0, 0.5, 0.3},
+		BaseFreq:   330,
+		Harmonics:  []float64{1, 2, 3},
+		Duration:   duration,
+		SampleRate: sampleRate,
+		Phi:        0,
+	}
+
+	sig := signal.GenerateHarmonicSignal(params)
+
+	if len(sig.Samples) > N {
+		sig.Samples = sig.Samples[:N]
+	}
+	return sig
+}
+
 func (s *service) ApplyMovingAverageFilter(sig signal.Signal, M int) signal.Signal {
 	filtered := filter.MovingAverageFilter(sig.Samples, M)
 	return signal.Signal{
@@ -162,12 +181,10 @@ func (s *service) ApplyMovingAverageFilter(sig signal.Signal, M int) signal.Sign
 	}
 }
 
-// ApplyFIRBandStopFilter - применяет КИХ режекторный фильтр
 func (s *service) ApplyFIRBandStopFilter(sig signal.Signal, f1, f2 float64, M int) (signal.Signal, []float64, []float64, []float64) {
 	coeffs := filter.DesignFIRBandStop(f1, f2, sig.SampleRate, M)
 	filtered := filter.FIRFilter(sig.Samples, coeffs)
 
-	// Вычисляем частотную характеристику
 	freqs, magnitude := filter.ComputeFrequencyResponse(coeffs, sig.SampleRate, 1024)
 
 	return signal.Signal{
@@ -176,12 +193,10 @@ func (s *service) ApplyFIRBandStopFilter(sig signal.Signal, f1, f2 float64, M in
 	}, coeffs, freqs, magnitude
 }
 
-// ApplyIIRBandPassFilter - применяет БИХ полосовой фильтр
 func (s *service) ApplyIIRBandPassFilter(sig signal.Signal, f0, bw float64) (signal.Signal, []float64, []float64) {
 	coeffs := filter.DesignBandPassIIR(f0, bw, sig.SampleRate)
 	filtered := filter.IIRFilter(sig.Samples, coeffs)
 
-	// Вычисляем частотную характеристику
 	freqs, magnitude := filter.ComputeFrequencyResponse(coeffs, sig.SampleRate, 1024)
 
 	return signal.Signal{
@@ -190,7 +205,6 @@ func (s *service) ApplyIIRBandPassFilter(sig signal.Signal, f0, bw float64) (sig
 	}, freqs, magnitude
 }
 
-// GetFilterFrequencyResponse - получает частотную характеристику для display
 func (s *service) GetFilterFrequencyResponse(coeffs interface{}, fs float64, nFreqs int) ([]float64, []float64) {
 	return filter.ComputeFrequencyResponse(coeffs, fs, nFreqs)
 }
